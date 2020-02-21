@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<efcore namespace="TwitterStreamWebViewer" p1:Guid="89e73fd3-244f-493c-a689-5b45680bcf30" xmlns:p1="http://devart.com/schemas/EntityDeveloper/1.0">
+  <class name="TweetRecord" entity-set="TweetRecords" p1:Guid="27b25ae5-eeff-4deb-a5b8-caeb64842ca4">
+    <id name="ID" type="Int64" value-generated="OnAdd" p1:ValidateRequired="true" p1:Guid="301b19e4-fa20-4855-86bc-10ec39ca6c18">
+      <column name="" />
+    </id>
+    <property name="TweetID" type="String" p1:ValidateRequired="true" p1:Guid="c1fe1110-3b90-462d-9cd8-ed0db470abaf">
+      <column name="" />
+    </property>
+    <property name="TweetJson" type="String" p1:ValidateRequired="true" p1:Guid="5577091c-1e43-4b45-8f30-3aabba56f38d">
+      <column name="TweetJson" not-null="True" sql-type="nvarchar(max)" p1:unicode="True" />
+    </property>
+    <property name="FacebookID" type="String" p1:nullable="True" p1:ValidateRequired="false" p1:Guid="3741346f-22e4-4271-b16c-65a42bf1f4f4">
+      <column name="" />
+    </property>
+  </class>
+  <class name="TwitterUser" entity-set="TwitterUsers" p1:Guid="72556b18-f628-400c-853f-121ef9a2c7ae">
+    <id name="ID" type="Int64" value-generated="OnAdd" p1:ValidateRequired="true" p1:Guid="be6c9511-9f9e-4a0d-8835-5e8fd3bf4f6b">
+      <column name="" />
+    </id>
+    <property name="TwitterUserID" type="String" p1:ValidateRequired="true" p1:Guid="063e6daa-c2f1-4b3a-962a-4c716ff15fc2">
+      <column name="" />
+    </property>
+    <property name="TwitterUserJson" type="String" p1:ValidateRequired="true" p1:Guid="b0449ec2-02e4-4965-b245-485751619ce7">
+      <column name="TwitterUserJson" not-null="True" sql-type="nvarchar(max)" p1:unicode="True" />
+    </property>
+  </class>
+</efcore>
