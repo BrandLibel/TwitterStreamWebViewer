@@ -38,9 +38,9 @@ namespace TwitterStreamWebViewer
             //_filteredStream.AddLocation(new Location(30.6266, 81.4609, 30.6319, 81.6065));
             _filteredStream.AddFollow(user.Id);
             _filteredStream.AddTrack("YangGang");
-            //_filteredStream.AddTrack("DemDebate");
+            _filteredStream.AddTrack("NevadaCaucuses");
             _filteredStream.AddTrack("StillVotingYang");
-            //stream.AddTrack("FreedomDividend");
+            _filteredStream.AddTrack("NevadaForYang");
             //stream.AddTrack("SecureTheBag");
             //stream.AddTrack("YangMediaBlackout");
             //stream.AddTrack("YangMediaShoutout");
@@ -56,57 +56,115 @@ namespace TwitterStreamWebViewer
             {
                 try
                 {
-
+                    ITweet fullTweet = null;
+                    ITweet childTweet = null;
 
                     var tweet = args.Tweet;
                     if (tweet.IsRetweet) return;
 
+                    TwitterUser savedUser;
                     using (var db = new TwitterSearchModel())
                     {
-                        var savedUser = db.TwitterUsers.Where(u => u.TwitterUserID == tweet.CreatedBy.IdStr).FirstOrDefault();
-                        if (savedUser == null)
+                        savedUser = db.TwitterUsers.Where(u => u.TwitterUserID == tweet.CreatedBy.IdStr).FirstOrDefault();
+                    }
+                    if (savedUser == null)
+                    {
+                        var user = Tweetinvi.User.GetUserFromId(tweet.CreatedBy.Id);
+                        var userJson = Tweetinvi.JsonSerializer.ToJson(user.UserDTO);
+                        Console.WriteLine($"New User: {userJson}");
+                        using (var db = new TwitterSearchModel())
                         {
-                            var user = Tweetinvi.User.GetUserFromId(tweet.CreatedBy.Id);
-                            var userJson = Tweetinvi.JsonSerializer.ToJson(user.UserDTO);
-
                             db.TwitterUsers.Add(new TwitterUser
                             {
                                 TwitterUserID = user.IdStr,
                                 TwitterUserJson = userJson
                             });
+                            db.SaveChanges();
                         }
+                    }
+                    TweetRecord savedTweet;
+                    using (var db = new TwitterSearchModel())
+                    {
+                        savedTweet = db.TweetRecords.Where(t => t.TweetID == tweet.IdStr).FirstOrDefault();
+                    }
+                    if (savedTweet == null)
+                    {
+                        fullTweet = Tweetinvi.Tweet.GetTweet(tweet.Id);
 
-                        var savedTweet = db.TweetRecords.Where(t => t.TweetID == tweet.IdStr).FirstOrDefault();
-                        if (savedTweet == null)
+                        //var voteYang = Tweetinvi.Timeline.GetUserTimeline(.GetExistingList()
+                        var tweetJson = Tweetinvi.JsonSerializer.ToJson(fullTweet.TweetDTO);
+
+                        using (var db = new TwitterSearchModel())
                         {
-                            var fullTweet = Tweetinvi.Tweet.GetTweet(tweet.Id);
-                            _tweetHub.Clients.All.SendAsync("ReceiveTweet", fullTweet.TweetDTO.ToJson());
-                            //var voteYang = Tweetinvi.Timeline.GetUserTimeline(.GetExistingList()
-                            var tweetJson = Tweetinvi.JsonSerializer.ToJson(fullTweet.TweetDTO);
-
                             db.TweetRecords.Add(new TweetRecord
                             {
                                 TweetID = tweet.IdStr,
                                 TweetJson = tweetJson
                             });
+                            db.SaveChanges();
+                        }
+                        Console.WriteLine($"User: {fullTweet.CreatedBy.Name}");
+                        Console.WriteLine($"Tweet: {fullTweet.FullText ?? fullTweet.Text}");
+                        Console.WriteLine($"{fullTweet.Url}");
+                        Console.WriteLine();
+                    }
 
-                            Console.WriteLine($"User: {fullTweet.CreatedBy.Name}");
-                            Console.WriteLine($"Tweet: {fullTweet.FullText ?? fullTweet.Text}");
-                            Console.WriteLine($"{fullTweet.Url}");
-                            Console.WriteLine();
+
+
+
+
+                    //tweetPostQueue.Enqueue(tweet)
+                    //var fbPostResult = PostToFacebook(tweet).Result;
+
+
+                    string childTweetIDStr = tweet.InReplyToStatusIdStr ?? tweet.QuotedStatusIdStr;
+                    if (childTweetIDStr != null)
+                    {
+                        long childTweetID = tweet.InReplyToStatusId ?? tweet.QuotedStatusId ?? 0;
+                        childTweet = Tweetinvi.Tweet.GetTweet(childTweetID);
+                        TweetRecord savedChildTweet;
+                        using (var db = new TwitterSearchModel())
+                        {
+                            savedChildTweet = db.TweetRecords.Where(t => t.TweetID == childTweetIDStr).FirstOrDefault();
                         }
 
-                        db.SaveChanges();
+                        if (savedChildTweet == null)
+                        {
+                            
+                            if (childTweetID != 0)
+                            {
+                                
+                                if (childTweet != null)
+                                {
+                                    using (var db = new TwitterSearchModel())
+                                    {
+                                        db.TweetRecords.Add(
+                                            new TweetRecord
+                                            {
+                                                TweetID = childTweetIDStr,
+                                                TweetJson = Tweetinvi.JsonSerializer.ToJson(childTweet.TweetDTO)
+                                            });
+                                        db.SaveChanges();
+                                    }
+                                }
 
+                            }
 
-
-                        //tweetPostQueue.Enqueue(tweet)
-                        //var fbPostResult = PostToFacebook(tweet).Result;
+                        }
                     }
-                }
-                catch(Exception e)
-                {
+                    if (fullTweet != null && childTweet == null)
+                    {
+                        _tweetHub.Clients.All.SendAsync("ReceiveTweet", fullTweet.TweetDTO.ToJson(), null);
+                    }
+                    if (fullTweet != null && childTweet != null)
+                    {
+                        _tweetHub.Clients.All.SendAsync("ReceiveTweet", fullTweet.TweetDTO.ToJson(), childTweet.TweetDTO.ToJson());
+                    }
 
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ERROR: { e.Message}");
                 }
                 finally
                 {
@@ -115,8 +173,6 @@ namespace TwitterStreamWebViewer
             };
 
             _filteredStream.StartStreamMatchingAnyCondition();
-
-
         }
 
         public StreamState GetStreamStatus()
@@ -125,11 +181,11 @@ namespace TwitterStreamWebViewer
             {
                 return _filteredStream.StreamState;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return StreamState.Stop;
             }
-            
+
         }
     }
 }
