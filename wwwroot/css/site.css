@@ -27,11 +27,11 @@ a {
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
-  font-size: 14px;
+  font-size: 12px;
 }
 @media (min-width: 768px) {
   html {
-    font-size: 16px;
+    font-size: 12px;
   }
 }
 
@@ -59,8 +59,9 @@ html {
 }
 
 body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    /*background-color: #F0F8FF;*/
 }
 .footer {
   position: absolute;
@@ -71,5 +72,5 @@ body {
 }
 
 .card-header {
-    background-color: rgb(134, 208, 253);
+    background-color: rgb(241, 250, 255);
 }

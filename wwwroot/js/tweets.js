@@ -24,15 +24,15 @@ connection.on("ReceiveTweet", function (tweetDTO, childTweetDTO) {
         if (childTweet.extended_tweet) { childTweetText = childTweet.extended_tweet.full_text || childTweet.extended_tweet.text; }
         childTweetText = childTweetText || childTweet.full_text || childTweet.text;
         childTweetText = childTweetText.replace(/((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g, '<a target="_blank" href="$1">$1</a> ');
-        var quotedVerifiedImg = (childTweet.user.verified) ? `<img src="/img/twitterverified.png">` : ``;
+        var quotedVerifiedImg = (childTweet.user.verified) ? `<img height="15" src="/img/twitterverified.png">` : ``;
         
    
-        subTweet = `<div class="card p-0" style="bg-color:#cccccc;" >
-                   <div class="card-header m-0 p-0" id="heading-${childTweet.id}"><img height="35"  src="${childTweet.user.profile_image_url_https}" class="float-left"><small class="float-sm-left"> ${childTweet.user.screen_name}  ${quotedVerifiedImg}<br> Followers: ${childTweet.user.followers_count}</small><small class="float-sm-right">#<a href="https://twitter.com/${childTweet.user.screen_name}/status/${childTweet.id}" target="_blank">${childTweet.id}</a><br/>${childTweet.created_at}</small></div>
-                    <div class="card-body m-0 p-0"><small>${childTweetText}</small></div>
+        subTweet = `<div class="card p-0 m-1 mb-2 shadow-sm"  >
+                   <div class="card-header m-0 p-0" id="heading-${childTweet.id}"><img height="45"  src="${childTweet.user.profile_image_url_https}" class="float-left"><div class="float-left p-1"> ${childTweet.user.screen_name}  ${quotedVerifiedImg}<br>Followers: ${childTweet.user.followers_count}</div><div class="float-right p-1">#<a href="https://twitter.com/${childTweet.user.screen_name}/status/${childTweet.id_str}" target="_blank">${childTweet.id}</a><br><div class="float-right">${new Date(childTweet.created_at).toLocaleString("en-US")}</div></div></div>
+                    <div class="card-body m-0 p-1">${childTweetText}</div>
                 </div>`;
     }
-    var verifiedImg = (tweet.user.verified) ? `<img src="/img/twitterverified.png">` : ``;
+    var verifiedImg = (tweet.user.verified) ? `<img height="15"  src="/img/twitterverified.png">` : ``;
     //console.log(tweet);
     //tweetID = tweetID.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     //tweetUser = tweetUser.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -46,13 +46,13 @@ connection.on("ReceiveTweet", function (tweetDTO, childTweetDTO) {
 
     // Construct card content
     const content = `
-    <div id="${tweet.id}" class="card p-0" >
-    <div class="card-header m-0 p-0" id="heading-${tweet.id}">
-<img height="35" src="${tweet.user.profile_image_url_https}" class="float-left">
-<small class="float-sm-left"><a class="twitter-follow-button" href="https://twitter.com/${tweet.user.screen_name}">${tweet.user.screen_name}</a> ${verifiedImg}<br> Followers: ${tweet.user.followers_count}</small>
-<small class="float-sm-right">#<a href="https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}" target="_blank">${tweet.id_str}</a>
-<br/>${tweet.created_at}</small></div>
-        <div class="card-body p-0 m-0">${tweetText}<div class="container-fluid"><div class="row"><div class="col-12">${subTweet}</div></div></div>
+    <div id="${tweet.id}" class="card p-0 m-2 shadow-sm" >
+    <div class="card-header m-0 p-0  " id="heading-${tweet.id}">
+<img height="45" src="${tweet.user.profile_image_url_https}" class="float-left">
+<div class="float-sm-left p-1"><a class="twitter-follow-button" href="https://twitter.com/${tweet.user.screen_name}">${tweet.user.screen_name}</a> ${verifiedImg}<br> Followers: ${tweet.user.followers_count}</div>
+<div class="float-sm-right p-1">#<a href="https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}" target="_blank">${tweet.id_str}</a>
+<br/><span class=float-right">${new Date(tweet.created_at).toLocaleString("en-US")}</span></div></div>
+        <div  class="card-body p-1 m-0">${tweetText}<div class="container-fluid"><div class="row"><div class="col-12">${subTweet}</div></div></div>
     </div></div></div>
   `;
     
